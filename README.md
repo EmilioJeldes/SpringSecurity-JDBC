@@ -51,7 +51,16 @@ protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 * `.usersByUsernameQuery` native sql statement to find the `User`
 * `.authoritiesByUsernameQuery` native sql statement to find the `Authorities` related to that user
 
-
+#### 4. Add database credentials to the application.properties or application.yml
+````yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/jdbc_test?useSSL=false
+    username: root
+    password: mi-contraseña
+    driver-class-name: com.mysql.jdbc.Driver
+````
+---
 ### Database Scheema for testing
 ````sql
 CREATE TABLE users
@@ -73,7 +82,7 @@ CREATE TABLE authorities
 CREATE UNIQUE INDEX user_id_authority_unique ON authorities (user_id, authority);
 ````
 
-### Data for testing
+#### Data for testing
 ````sql
 INSERT INTO users (username, password, enabled) VALUES ('user', '$2a$10$UjkBbFTTLtrVrPWKm4AmjufiyGGGprc04nxghBeWmWyP1o25lA.ka', 1);
 INSERT INTO users (username, password, enabled) VALUES ('admin', '$2a$10$U.kxzZsFe3.1Uw3qgVicXek9X8HeyRbVGMRsG3VeuoGWRXyV2zHF2', 1);
