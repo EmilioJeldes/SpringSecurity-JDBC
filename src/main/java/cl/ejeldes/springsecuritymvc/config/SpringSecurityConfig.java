@@ -1,17 +1,30 @@
 package cl.ejeldes.springsecuritymvc.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final DataSource dataSource;
+
+    @Autowired
+    public SpringSecurityConfig(BCryptPasswordEncoder passwordEncoder, DataSource dataSource) {
+        this.passwordEncoder = passwordEncoder;
+        this.dataSource = dataSource;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -29,12 +42,11 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        auth.jdbcAuthentication()
+                .dataSource(dataSource).passwordEncoder(passwordEncoder)
+                .usersByUsernameQuery("SELECT username, password, enabled FROM users WHERE username = ?")
+                .authoritiesByUsernameQuery(
+                        "SELECT u.username, a.authority FROM authorities a INNER JOIN users u ON (a.user_id = u.id) WHERE u.username = ?");
 
-        User.UserBuilder users = User.builder().passwordEncoder(encoder::encode);
-
-        auth.inMemoryAuthentication()
-                .withUser(users.username("admin").password("12345").roles("ADMIN", "USER"))
-                .withUser(users.username("user").password("12345").roles("USER"));
     }
 }
