@@ -61,7 +61,7 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
 ````
 ---
-### Database Scheema for testing
+#### Database Scheema for testing
 ````sql
 CREATE TABLE users
 (
